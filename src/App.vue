@@ -15,7 +15,7 @@
 <script>
 const { ipcRenderer } = require('electron')
 let video
-
+var mediaStream
 
 export default {
     name: 'Escritorio',
@@ -25,20 +25,32 @@ export default {
         }
     },
     methods: {
-        iniciar(){
-            video = window.document.querySelector('video')
-            let errorCallback = (error) =>{
-                console.log('Hubo un error al conectar con el strim de video' + error.message)
-            }
+        async iniciar(){
+            //video = window.document.querySelector('video')
+            // let errorCallback = (error) =>{
+            //     console.log('Hubo un error al conectar con el strim de video' + error.message)
+            // }
 
-            window.navigator.webkitGetUserMedia({video: true}, (localMediaStream) => {
-                video.srcObject = localMediaStream
-            }, errorCallback);
+            // window.navigator.webkitGetUserMedia({video: true}, (localMediaStream) => {
+            //     video.srcObject = localMediaStream
+            // }, errorCallback);
+
+            try {
+                video = window.document.querySelector('video')
+                
+                mediaStream = await navigator.mediaDevices.getUserMedia({audio: false, video: {width: 720, height: 480}})
+                video.srcObject = mediaStream
+
+            } catch (e) {
+                console.log(e)
+            }
         },
         takePhoto(){
             let canvas = window.document.querySelector('canvas');
             canvas.getContext('2d').drawImage(video, 0, 0, 800, 600);
             let photoData = canvas.toDataURL('image/png').replace(/^data:image\/(png|jpg|jpeg);base64,/, '');
+
+            //console.log(photoData)
 
             ipcRenderer.send('foto', photoData);
         }
